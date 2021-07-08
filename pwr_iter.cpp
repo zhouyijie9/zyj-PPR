@@ -7,6 +7,46 @@ struct Node {
     vector<int> outNodes;
 };
 
+vector<double> operator*(const double a, const vector<double>& v)
+{
+  vector<double> r;
+
+  r.reserve(v.size());
+  for (auto i = 0; i < v.size(); ++i) {
+    r.push_back(a * v[i]);
+  }
+  return r;
+}
+
+vector<double> operator+(const vector<double>& v1, const vector<double>& v2)
+{
+  vector<double> r;
+
+  r.reserve(v1.size());
+  for (auto i = 0; i < v1.size(); ++i) {
+    r.push_back(v1[i] + v2[i]);
+  }
+  return r;
+}
+
+vector<double> operator*(const vector<double>& v1, const vector<vector<double> >& v2)
+{
+    vector<double> r;
+    double tmp;
+
+    r.reserve(v1.size());
+
+    for (int i = 0; i < v1.size(); ++i)
+    {
+        tmp = 0;
+        for (int j = 0; j < v1.size(); ++j)
+            tmp += v1[j] * v2[j][i];
+        
+        r.push_back(tmp);
+    }
+    return r;
+}
+
 int main()
 {
     double alpha = 0.15;
@@ -65,25 +105,15 @@ int main()
     {
         iter_num++;
         
-        for (int i = 0; i < n; i++)
-        {
-            ppr_value[i] += alpha * gamma[i];
-        }
+        ppr_value = ppr_value + alpha * gamma; //重载了+和×运算
 
-        vector<double> tmp_gamma(n, 0); //gamma是一个1×n的向量，每个位置表示对应点的residue值
+        gamma = (1 - alpha) * gamma * P; //重载了第二个×运算
 
         for (int i = 0; i < n; i++)
         {
-            double tmp = 0;
-            for (int j = 0; j < n; j++)
-            {
-                tmp += P[j][i] * gamma[j];
-            }
-            tmp_gamma[i] = (1 - alpha) * tmp;
-            if (tmp_gamma[i] < threshold)
+            if (gamma[i] < threshold)
                 should_stop++;
         }
-        gamma = tmp_gamma;
 
         if(should_stop == n)
             break;
