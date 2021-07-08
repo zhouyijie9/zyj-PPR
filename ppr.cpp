@@ -77,16 +77,18 @@ int main()
     }
     //cout << "curr_n=" << curr_n << ", vertex_num=" << vertex_num << endl;
     inFile.close();
-    //nodes[vertex_map[source]].residue = 1;
+    nodes[vertex_map[source]].residue = 1;
     
+    //------------------------------------------------
     //每个点的residue随机赋值0~1
-    srand(time(NULL));
-    int N = 999; //精度为小数点后面3位
-    for(int i = 0; i < vertex_num; i++)
-    {
-        nodes[vertex_map[i]].residue = rand() % (N + 1) / (float)(N + 1);
-        cout << "点" << i << "的初始residue=" << nodes[vertex_map[i]].residue << endl;
-    }    
+    // srand(time(NULL));
+    // int N = 999; //精度为小数点后面3位
+    // for(int i = 0; i < vertex_num; i++)
+    // {
+    //     nodes[vertex_map[i]].residue = rand() % (N + 1) / (float)(N + 1);
+    //     cout << "点" << i << "的初始residue=" << nodes[vertex_map[i]].residue << endl;
+    // }
+    //------------------------------------------------
 
     int cnt = 0; // count the number of iterations
     double start = clock();

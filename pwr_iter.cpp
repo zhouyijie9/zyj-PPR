@@ -66,17 +66,17 @@ int main()
     inFile >> n >> m;
 
     vector<double> gamma(n, 0); //gamma是一个1×n的向量，每个位置表示对应点的residue值
-    //gamma[0] = 1.0;
+    gamma[0] = 1.0;
 
     //------------------------------------------------
     //每个点的residue随机赋值0~1
-    srand(time(NULL));
-    int N = 999; //精度为小数点后面3位
-    for(int i = 0; i < n; i++)
-    {
-        gamma[i] = rand() % (N + 1) / (float)(N + 1);
-        cout << "点" << i << "的初始residue=" << gamma[i] << endl;
-    }    
+    // srand(time(NULL));
+    // int N = 999; //精度为小数点后面3位
+    // for(int i = 0; i < n; i++)
+    // {
+    //     gamma[i] = rand() % (N + 1) / (float)(N + 1);
+    //     cout << "点" << i << "的初始residue=" << gamma[i] << endl;
+    // }    
     //----------------------------------------------------
 
     vector<double> ppr_value(n, 0); //每次迭代的结果累加到此向量中
@@ -122,9 +122,17 @@ int main()
             should_stop = 0;
     }
     cout << "iter_num = " << iter_num << endl;
+
+    //将结果写入文件
+    string resultPath = "./out/pwr_itr_result_source_residue_1.txt";
+    // string resultPath = "./out/pwr_itr_result_random_residue.txt";
+    ofstream fout(resultPath);
+
     for (int i = 0; i < n; i++)
     {
-        cout << ppr_value[i] << endl;
+        fout << ppr_value[i] << endl;
     }
-    cout << endl;
+    
+    fout.close();
+    
 }
