@@ -30,37 +30,28 @@ void DelLineData(string fileName, int lineNum)
 	outfile.close();
 }
 
-// 修改指定行
-void ModifyLineData(string fileName, int lineNum, char* lineData)
+// 在第一行插入代表n+m的字符串
+void InsertData(string fileName, string insertData)
 {
-	ifstream in;
-	in.open(fileName);
+	ifstream infile;
+	infile.open(fileName);
  
 	string strFileData = "";
-	int line = 1;
-	char tmpLineData[1024] = {0};
-	while(in.getline(tmpLineData, sizeof(tmpLineData)))
-	{
-		if (line == lineNum)
-		{
-			strFileData += CharToStr(lineData);
-			strFileData += "\n";
-		}
-		else
-		{
-			strFileData += CharToStr(tmpLineData);
-			strFileData += "\n";
-		}
-		line++;
-	}
-	in.close();
+    string line_str;
+    strFileData += insertData;
+    while (getline(infile, line_str))
+    {
+        strFileData += line_str;
+        strFileData += '\n';
+    }
+    infile.close();
  
 	//写入文件
-	ofstream out;
-	out.open(fileName);
-	out.flush();
-	out<<strFileData;
-	out.close();
+	ofstream outfile;
+	outfile.open(fileName);
+	outfile.flush();
+	outfile<<strFileData;
+	outfile.close();
 }
 
 // 读取第3行的【# Nodes: 281903 Edges: 2312497】中两个数字
@@ -118,11 +109,7 @@ int main()
         DelLineData(fileName, i);
     
     // 把str_insert_to_line1插入第一行
-
-    
-
-    // 删除前4行数据，随后把n和m写入第一行
-
+    InsertData(fileName, str_insert_to_line1);
 
     return 0;
 }
