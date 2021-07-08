@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <ctime>
 #include <unordered_map>
 using namespace std;
 
@@ -24,7 +25,7 @@ int main()
     string edge_path = "/home/zyj/zhou/dataset/a.txt";
     double threshold = 1e-6;
 
-    int vertex_num = 0; // 所有点的个数
+    // int vertex_num = 0; // 所有点的个数
     //unordered_map<int, Node> nodes; //nodes存放页面向量
     vector<Node> nodes; //nodes用来存放点向量
     unordered_map<int, int> vertex_map; //原id: 新id
@@ -38,8 +39,13 @@ int main()
         cout << "open file " << edge_path << " failed." << endl;
         return 0;
     }
+    int vertex_num, edge_num;
+    inFile >> vertex_num >> edge_num;
+    nodes.resize(vertex_num);
+    
     int u, v;
     int flag = 0;
+    int curr_n = 0;
     while(inFile >> u >> v)
     {
         if(flag == 0)
@@ -49,50 +55,38 @@ int main()
         }
         // 传说中的重新编号：对每个id做一个map映射，映射成0开始的连续编号，写入结果时再映射回最初编号
         if(vertex_map.find(u) == vertex_map.end()) {
-            vertex_map[u] = vertex_num;
-            vertex_reverse_map[vertex_num] = u;
-            u = vertex_num++;
+            vertex_map[u] = curr_n;
+            vertex_reverse_map[curr_n] = u;
+            u = curr_n++;
         }
         else {
             u = vertex_map[u];
         }
 
         if(vertex_map.find(v) == vertex_map.end()){
-            vertex_map[v] = vertex_num;
-            vertex_reverse_map[vertex_num] = v;
-            v = vertex_num++;
+            vertex_map[v] = curr_n;
+            vertex_reverse_map[curr_n] = v;
+            v = curr_n++;
         }
         else {
             v = vertex_map[v];
         }
 
-        //nodes[u].outNodes.emplace_back(v);
+        nodes[u].outNodes.emplace_back(v);
         //然后取vertex_reverse_map[key值]可以得到实际图中的点
     }
-
+    //cout << "curr_n=" << curr_n << ", vertex_num=" << vertex_num << endl;
     inFile.close();
-    cout << vertex_num << endl;
-    nodes.resize(vertex_num);
-
-    // 再读一次文件。我想不到更好的方法。。。松哥原版代码里第一行有点的个数的，vertex_num就可以很轻松知道。我的没有，所以
-    // 为了resize一下nodes，只能先求一下点的个数。等我的文件里也有点的个数，下面这个循环就不必要了
-    ifstream inFile2(edge_path);
-    if(!inFile2)
+    //nodes[vertex_map[source]].residue = 1;
+    
+    //每个点的residue随机赋值0~1
+    srand(time(NULL));
+    int N = 999; //精度为小数点后面3位
+    for(int i = 0; i < vertex_num; i++)
     {
-        cout << "open file " << edge_path << " failed." << endl;
-        return 0;
-    }
-    int u2, v2;
-    //int flag = 0;
-    while(inFile2 >> u2 >> v2)
-    {
-        nodes[vertex_map[u2]].outNodes.push_back(vertex_map[v2]);
-    }
-    inFile2.close();
-
-    nodes[vertex_map[source]].residue = 1;
-
-
+        nodes[vertex_map[i]].residue = rand() % (N + 1) / (float)(N + 1);
+        cout << "点" << i << "的初始residue=" << nodes[vertex_map[i]].residue << endl;
+    }    
 
     int cnt = 0; // count the number of iterations
     double start = clock();
@@ -117,7 +111,7 @@ int main()
             //nodes[u].residue = 0; //这里不用赋值为0也没事，第./+7行用tmp_residue进行值的替换 效果一样的
         }
 
-        cout << "第" << cnt << "轮结果：\n";
+        //cout << "第" << cnt << "轮结果：\n";
 
         for(int u = 0; u < vertex_num; u++)
         {
@@ -138,20 +132,25 @@ int main()
     printf("%s%d\n", "step = ", cnt);
     cout << "time: " << (clock()-start) / CLOCKS_PER_SEC<< "s\n";
     // 将运行时间写入文件
-    string resultPath = "./out/result.txt";
-    ofstream fout_1(resultPath, ios::app|ios::out);
-    fout_1 << "normal_graph_time:" << (clock()-start) / CLOCKS_PER_SEC << endl;
-    fout_1 << "normal_graph_step:" << cnt << endl;
-    fout_1.close();
+    // string resultPath = "./out/result.txt";
+    // ofstream fout_1(resultPath, ios::app|ios::out);
+    // fout_1 << "normal_graph_time:" << (clock()-start) / CLOCKS_PER_SEC << endl;
+    // fout_1 << "normal_graph_step:" << cnt << endl;
+    // fout_1.close();
 
-    string outPath = "./out/ppr.txt";
-    cout << "out path: " << outPath << endl;
-    ofstream fout(outPath);
+    // string outPath = "./out/ppr.txt";
+    // cout << "out path: " << outPath << endl;
+    // ofstream fout(outPath);
+    // for(int i = 0; i < vertex_num; i++)
+    // {
+    //     fout << vertex_reverse_map[i] << " residue: " << nodes[i].residue << " reserve: " << nodes[i].reserve << endl;
+    // }
+
+    // fout.close();
+    cout << "每个点的迭代结果：\n";
     for(int i = 0; i < vertex_num; i++)
     {
-        fout << vertex_reverse_map[i] << " residue: " << nodes[i].residue << " reserve: " << nodes[i].reserve << endl;
+        cout << vertex_reverse_map[i] << " residue: " << nodes[i].residue << " reserve: " << nodes[i].reserve << endl;
     }
-
-    fout.close();
     return 0;
 }

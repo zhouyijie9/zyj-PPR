@@ -95,8 +95,8 @@ public:
         string v_path = "/home/zyj/zhou/CLionProjects/untitled/out/" + filename + ".v"; // 压缩图点文件，包含超点和源顶点的对应关系
         string e_path = "/home/zyj/zhou/CLionProjects/untitled/out/" + filename + ".e"; // 压缩图边文件，超点之间的边
         //string edge_new_path = edge_new_path_;  // 原始图文件，即解压之后的图
-        string outPath = "./out/ppr_yasuo.txt";   // 保存最终计算结果
-        string outPath_compress = "./out/ppr_yasuo_com.txt";   // 保存第一次收敛结果
+        string outPath = "/home/zyj/zhou/CLionProjects/untitled/out/ppr_yasuo.txt";   // 保存最终计算结果
+        string outPath_compress = "/home/zyj/zhou/CLionProjects/untitled/out/ppr_yasuo_com.txt";   // 保存第一次收敛结果
         read_nodes(v_path);
         getNodesVec(e_path);
 
@@ -111,47 +111,55 @@ public:
         double sum_time = 0;
         double start = clock();
         int nodeBelowThr = 0;
-
+        cout << "start iterating...............\n";
         while(1)
         {
-            nodeBelowThr = 0; // residue值低于阈值的点 个数
-
-            // real node
-            for(int i = 0; i < virtual_node_start; i++) {
-                Node& node = nodes[i];
-                int outDegree = node.outAdjNum;
-                double teleportVal = (1 - alpha) * node.residue / outDegree;
-                for(auto v : node.outNodes){ //
-                    //nodes[v].reserve += teleportVal * nodes[v].weight; // 乘weight？
-                    nodes[v].tmp_residue += teleportVal * nodes[v].weight;
-                }
-            }
-            // virtual node
-            for(int i = virtual_node_start; i < vertex_num; i++){
-                Node& node = nodes[i];
-                int outDegree = node.outAdjNum;
-                double teleportVal = node.tmp_residue / outDegree;
-                for(auto v : node.outNodes){
-                    nodes[v].tmp_residue += teleportVal;
-                }
-                node.tmp_residue = 0;
-            }
-
-            for(int u = 0; u < virtual_node_start; u++)
+            for(int i = 0; i < vertex_num; i++)
             {
+                nodeBelowThr = 0; // residue值低于阈值的点 个数
+                //.v文件中，先存真实点，再存虚拟点
+                Node& node = nodes[i];
+
+                if(i < virtual_node_start)  // real nodes
+                {
+                    double teleportVal = (1 - alpha) * node.residue / node.outAdjNum;
+                    for(auto v : node.outNodes){
+                        nodes[v].tmp_residue += teleportVal * nodes[v].weight;
+                    }
+                    node.reserve += alpha * node.residue;
+                    node.residue = 0;
+                }
+                else  // virtual nodes
+                {
+                    double teleportVal = node.tmp_residue / node.outAdjNum; //虚拟点的outAdjNum和weight是不是一样的？
+                    for(auto v : node.outNodes){
+                        nodes[v].tmp_residue += teleportVal;
+                    }
+                    node.tmp_residue = 0;
+                }
+            }
+
+            for (int u = 0; u < virtual_node_start; u++) {
                 nodes[u].residue = nodes[u].tmp_residue;
                 nodes[u].tmp_residue = 0;
 
-                if(nodes[u].residue / nodes[u].outNodes.size() < threshold)
+                if (nodes[u].residue / nodes[u].outNodes.size() < threshold)
                     nodeBelowThr++;
             }
 
+            //输出，检查一下
+            for(int i = 0; i < vertex_num; i++)
+            {
+                if(step < 10)
+                    cout << "第" << step << "轮，点" << i << "的tmp_residue=" << nodes[i].tmp_residue << "，residue=" << nodes[i].residue << "，reserve=" << nodes[i].reserve << endl;
+            }
 
-            if(nodeBelowThr == vertex_num)
+            if(nodeBelowThr == virtual_node_start)
                 break;
 
             step++;
         }
+        cout << "finish iterating...............\n";
         cout << "step=" << step << ", Compressed graph convergence" << endl;
         pre_time = (clock()-start) / CLOCKS_PER_SEC;
         cout << "time: " << pre_time << "s" << endl;
@@ -161,19 +169,13 @@ public:
         // 测试: 输出压缩计算的结果
         cout << "\nout path: " << outPath_compress << endl;
         ofstream fout_com(outPath_compress);
-//        for(auto n_: nodes){
-//            if(n_.weight == 1){ // 只写入真实点
-//                fout_com << vertex_reverse_map[n_] << ' ' << n_.second.reserve << endl;
-//            }
-//        }
         for(int i = 0; i < virtual_node_start; i++)
             fout_com << vertex_reverse_map[i] << "点，residue=" << nodes[i].residue << "，reverse=" << nodes[i].reserve << "\n";
         fout_com.close();
 
     }
     ~PPR_yasuo() {}
-//public:
-    //unordered_map<int, Node> nodes; //nodes存放页面向量，大小为N
+public:
     vector<Node> nodes;
     unordered_map<int, int> vertex_map; //原id: 新id
     unordered_map<int, int> vertex_reverse_map; // 新id: 原id
