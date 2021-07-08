@@ -2,7 +2,7 @@
 #include <fstream>
 using namespace std;
 
-// 删除指定行
+// 删除前lineNum行
 void DelLineData(string fileName, int lineNum)
 {
 	ifstream infile;
@@ -13,7 +13,7 @@ void DelLineData(string fileName, int lineNum)
 	string line_str;
 	while(getline(infile, line_str))
 	{
-        if (line != lineNum)
+        if (line > lineNum)
 		{
 			strFileData += line_str;
 			strFileData += '\n';
@@ -104,9 +104,8 @@ int main()
 
     string str_insert_to_line1 = get_n_m_form_line3(fileName); // 从第三行中获取n和m
 
-    // 删除1~4行
-    for(int i = 1; i <= 4; i++)
-        DelLineData(fileName, i);
+    // 删除前4行
+    DelLineData(fileName, 4);
     
     // 把str_insert_to_line1插入第一行
     InsertData(fileName, str_insert_to_line1);
