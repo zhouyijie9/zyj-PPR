@@ -35,9 +35,9 @@ web_stanford.txt前10行：
 
 ### pwr_iter2.cpp 公式
 
-<!-- $PPR(i)=(1-d)r_i+d\sum\limits_{j\in in(i)}\frac{PR(j)}{|out(i)|},$ -->
+<!-- $PPR(i)=(1-d)r_i+d\sum\limits_{j\in in(i)}\frac{PPR(j)}{|out(i)|},$ -->
 
-![](https://latex.codecogs.com/svg.latex?PPR(i)=(1-d)r_i+d\sum\limits_{j\in&space;in(i)}\frac{PR(j)}{|out(i)|},)
+![](https://latex.codecogs.com/svg.latex?PPR(i)=(1-d)r_i+d\sum\limits_{j\in&space;in(i)}\frac{PPR(j)}{|out(i)|},)
 
 <!-- $r_i=\begin{cases}1,\quad i=u\\0,\quad i\neq u\end{cases}$ -->
 ![](https://latex.codecogs.com/svg.latex?r_i=\begin{cases}1,\quad&space;i=u\\\\0,\quad&space;i\neq&space;u\end{cases})
