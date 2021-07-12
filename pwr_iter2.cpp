@@ -72,18 +72,6 @@ int main()
             oldPPR[i] = PPR[i];
             // PPR[i] = 0;
         }
-
-        //每个顶点被访问到的概率趋于稳定时停止游走
-        // for (int i = 0; i < n; i++) {
-        //     if (abs(oldPPR[i] - PPR[i]) < threshold)
-        //         should_stop++;
-        // }
-        // if(should_stop == n)
-        //     break;
-        // else {
-        //     should_stop = 0;
-        //     oldPPR = PPR;
-        // }
     }
 
     cout << "总共迭代次数：" << iter_num << endl;

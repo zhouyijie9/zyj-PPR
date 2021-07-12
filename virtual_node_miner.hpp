@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdio>
 #include <iostream>
+#include <fstream>
 #include <cassert>
 #include <ctime>
 #include <algorithm>
@@ -17,8 +18,8 @@
 #define K 10
 // #define CLUSTER_THRESHOLD 30
 // #define VIRTUAL_THRESHOLD 20
-int CLUSTER_THRESHOLD = 30;
-int VIRTUAL_THRESHOLD = 0;
+int CLUSTER_THRESHOLD;
+int VIRTUAL_THRESHOLD;
 
 using adjlist = std::vector<int>;
 using cluster = std::pair<int, int>;
@@ -224,7 +225,9 @@ public:
         int u = 0;
         int v = 0;
         _num_node = 0;
-        while (fscanf(f, "%d %d", &u, &v) > 0) {
+        int t = fscanf(f, "%d %d", &u, &v); // 第一行是n和m，不要
+        while (fscanf(f, "%d %d", &u, &v) > 0)
+        {
             assert(u >= 0);
             assert(v >= 0);
             _num_node = std::max(_num_node, size_t(u + 1));
@@ -250,6 +253,7 @@ public:
 
         return true;
     }
+
 
     void calc_min_hash(int u) {
         _hash_mat[u].u = u;
