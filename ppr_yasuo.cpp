@@ -92,17 +92,17 @@ public:
 
     int run(string filename)
     {
-        string v_path = "/home/zyj/zhou/CLionProjects/untitled/out/" + filename + ".v"; // 压缩图点文件，包含超点和源顶点的对应关系
-        string e_path = "/home/zyj/zhou/CLionProjects/untitled/out/" + filename + ".e"; // 压缩图边文件，超点之间的边
+        string v_path = "/home/zyj/zhou/PPR-proj/out/" + filename + ".v"; // 压缩图点文件，包含超点和源顶点的对应关系
+        string e_path = "/home/zyj/zhou/PPR-proj/out/" + filename + ".e"; // 压缩图边文件，超点之间的边
         //string edge_new_path = edge_new_path_;  // 原始图文件，即解压之后的图
-        string outPath = "/home/zyj/zhou/CLionProjects/untitled/out/ppr_yasuo.txt";   // 保存最终计算结果
-        string outPath_compress = "/home/zyj/zhou/CLionProjects/untitled/out/ppr_yasuo_com.txt";   // 保存第一次收敛结果
+        string outPath = "/home/zyj/zhou/PPR-proj/out/ppr_yasuo.txt";   // 保存最终计算结果
+        string outPath_compress = "/home/zyj/zhou/PPR-proj/out/ppr_yasuo_com.txt";   // 保存第一次收敛结果
         read_nodes(v_path);
         getNodesVec(e_path);
 
         cout << "vertex_num=" << vertex_num << ", virtual_node_start=" << virtual_node_start << endl;
         // 将运行时间写入文件
-        string resultPath = "./out/result.txt";
+        string resultPath = "./out/result2.txt";
         ofstream fout_1(resultPath, ios::app);
 
         int step = 0; //统计迭代几轮
@@ -148,11 +148,11 @@ public:
             }
 
             //输出，检查一下
-            for(int i = 0; i < vertex_num; i++)
-            {
-                if(step < 10)
-                    cout << "第" << step << "轮，点" << i << "的tmp_residue=" << nodes[i].tmp_residue << "，residue=" << nodes[i].residue << "，reserve=" << nodes[i].reserve << endl;
-            }
+            // for(int i = 0; i < vertex_num; i++)
+            // {
+            //     if(step < 10)
+            //         cout << "第" << step << "轮，点" << i << "的tmp_residue=" << nodes[i].tmp_residue << "，residue=" << nodes[i].residue << "，reserve=" << nodes[i].reserve << endl;
+            // }
 
             if(nodeBelowThr == virtual_node_start)
                 break;
@@ -192,7 +192,7 @@ int main(int argc, char const *argv[])
     //string edge_new_path(argv[2]);
     //string edge_new_path = "";
     //string filename(argv[3]);
-    string filename = "twt";
+    string filename = "zyyyj";
     ppry.run(filename);
     return 0;
 }

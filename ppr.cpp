@@ -22,7 +22,7 @@ int main()
 {
     //string edge_path = argv[1];
     //double threshold = atof(argv[2]);
-    string edge_path = "/home/zyj/zhou/dataset/a.txt";
+    string edge_path = "/home/zyj/zhou/dataset/a3.txt";
     double threshold = 1e-6;
 
     // int vertex_num = 0; // 所有点的个数

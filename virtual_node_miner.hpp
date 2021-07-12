@@ -749,23 +749,23 @@ public:
         // 3.将受影响的点重新聚类合并: _active_node_r(及其两跳内的点)
         // timer_next("increment_compress_4");
         int old_node_num = _num_node;
-        // std::unordered_set<int> _active_node_r_hop2;
-        // _active_node_r_hop2.insert(_active_node_r.begin(), _active_node_r.end());
-        // for(auto u : _active_node_r){
-        //     _active_node_r_hop2.insert(_adjlists_in[u].begin(), _adjlists_in[u].end());
-        //     // _active_node_r_hop2.insert(_adjlists[u].begin(), _adjlists[u].end());
-        //     // for(auto v : _adjlists_in[u]){
-        //     //     _active_node_r_hop2.insert(_adjlists_in[v].begin(), _adjlists_in[v].end());
-        //     //     _active_node_r_hop2.insert(_adjlists[v].begin(), _adjlists[v].end());
-        //     // }
-        //     // for(auto v : _adjlists[u]){
-        //     //     _active_node_r_hop2.insert(_adjlists_in[v].begin(), _adjlists_in[v].end());
-        //     //     _active_node_r_hop2.insert(_adjlists[v].begin(), _adjlists[v].end());
-        //     // }
-        // }
+        std::unordered_set<int> _active_node_r_hop2;
+        _active_node_r_hop2.insert(_active_node_r.begin(), _active_node_r.end());
+        for(auto u : _active_node_r){
+            _active_node_r_hop2.insert(_adjlists_in[u].begin(), _adjlists_in[u].end());
+            // _active_node_r_hop2.insert(_adjlists[u].begin(), _adjlists[u].end());
+            // for(auto v : _adjlists_in[u]){
+            //     _active_node_r_hop2.insert(_adjlists_in[v].begin(), _adjlists_in[v].end());
+            //     _active_node_r_hop2.insert(_adjlists[v].begin(), _adjlists[v].end());
+            // }
+            // for(auto v : _adjlists[u]){
+            //     _active_node_r_hop2.insert(_adjlists_in[v].begin(), _adjlists_in[v].end());
+            //     _active_node_r_hop2.insert(_adjlists[v].begin(), _adjlists[v].end());
+            // }
+        }
         timer_next("increment_compress_5");
-        // one_pass_by_active(_active_node_r_hop2);
-        // one_pass();
+        one_pass_by_active(_active_node_r_hop2);
+        one_pass();
         std::cout << "add virtual num=" << _num_node - old_node_num << std::endl;
 
     }
@@ -845,7 +845,7 @@ public:
         printf("_num_node_new=%d _raw_num_node_new=%d\n", int(_num_node_new), int(_raw_num_node_new));
         for (int i = 0; i < _num_node; i++) {
             // if(_adjlists[i].size() > 0){
-            std::cout << i << " " << _x[i] << " " << _y[i] << std::endl;
+            //std::cout << i << " " << _x[i] << " " << _y[i] << std::endl;
             fprintf(fp, "%d %d %d\n", i, _x[i], _y[i]);
             // }
         }
