@@ -845,7 +845,7 @@ public:
         printf("_num_node_new=%d _raw_num_node_new=%d\n", int(_num_node_new), int(_raw_num_node_new));
         for (int i = 0; i < _num_node; i++) {
             // if(_adjlists[i].size() > 0){
-            std::cout << i << " " << _x.size() << " " << _y.size() << std::endl;
+            std::cout << i << " " << _x[i] << " " << _y[i] << std::endl;
             fprintf(fp, "%d %d %d\n", i, _x[i], _y[i]);
             // }
         }
