@@ -22,7 +22,7 @@ int main()
 {
     //string edge_path = argv[1];
     //double threshold = atof(argv[2]);
-    string edge_path = "/home/zyj/zhou/dataset/a3.txt";
+    string edge_path = "/home/zyj/zhou/dataset/web-Stanford1.txt";
     double threshold = 1e-6;
 
     // int vertex_num = 0; // 所有点的个数
@@ -31,7 +31,8 @@ int main()
     unordered_map<int, int> vertex_map; //原id: 新id
     unordered_map<int, int> vertex_reverse_map; // 新id: 原id
     int source = 0; //我想用文件中的第一个点作为源点，整个实验最后得到的是另外的点关于它的PPR值
-
+    
+    double start_read_file = clock();
     //先读文件
     ifstream inFile(edge_path);
     if(!inFile)
@@ -78,7 +79,23 @@ int main()
     //cout << "curr_n=" << curr_n << ", vertex_num=" << vertex_num << endl;
     inFile.close();
     nodes[vertex_map[source]].residue = 1;
-    
+
+    double finish_read_file = clock();
+    cout << "read file time: " << (finish_read_file - start_read_file) / CLOCKS_PER_SEC << "s\n";
+
+    // 让出度为0的点随机指向一个点
+    for(int u = 0; u < vertex_num; u++)
+    {
+        int outDegree = nodes[u].outNodes.size();
+        if (outDegree == 0)
+        {
+            srand(time(NULL));
+            int random_outNode = rand() % vertex_num; // 把随机范围限制在[0, vertex_num-1] 之间
+            nodes[u].outNodes.emplace_back(random_outNode);
+        }
+    }
+
+
     //------------------------------------------------
     //每个点的residue随机赋值0~1
     // srand(time(NULL));
@@ -91,7 +108,7 @@ int main()
     //------------------------------------------------
 
     int cnt = 0; // count the number of iterations
-    double start = clock();
+    double start_computing = clock();
 
     // start iterating, stop when every node's residue below threshold
     // 每个点的residue的分配：有alpha部分转换为自己的reserve，有1-alpha部分平均传递给每个邻居
@@ -102,6 +119,7 @@ int main()
         for(int u = 0; u < vertex_num; u++)
         {
             int outDegree = nodes[u].outNodes.size();
+
             double teleportValue = (1 - alpha) * nodes[u].residue / outDegree;
             for(int i = 0; i < outDegree; i++)
             {
@@ -112,8 +130,6 @@ int main()
             nodes[u].reserve += alpha * nodes[u].residue;
             //nodes[u].residue = 0; //这里不用赋值为0也没事，第./+7行用tmp_residue进行值的替换 效果一样的
         }
-
-        //cout << "第" << cnt << "轮结果：\n";
 
         for(int u = 0; u < vertex_num; u++)
         {
@@ -131,8 +147,9 @@ int main()
         cnt++;
     }
 
+    cout << "computing time: " << (clock() - start_computing) / CLOCKS_PER_SEC << "s\n";
+    
     printf("%s%d\n", "step = ", cnt);
-    cout << "time: " << (clock()-start) / CLOCKS_PER_SEC<< "s\n";
     // 将运行时间写入文件
     // string resultPath = "./out/result.txt";
     // ofstream fout_1(resultPath, ios::app|ios::out);
@@ -149,10 +166,10 @@ int main()
     // }
 
     // fout.close();
-    cout << "每个点的迭代结果：\n";
-    for(int i = 0; i < vertex_num; i++)
-    {
-        cout << vertex_reverse_map[i] << " residue: " << nodes[i].residue << " reserve: " << nodes[i].reserve << endl;
-    }
+    // cout << "每个点的迭代结果：\n";
+    // for(int i = 0; i < vertex_num; i++)
+    // {
+    //     cout << vertex_reverse_map[i] << " residue: " << nodes[i].residue << " reserve: " << nodes[i].reserve << endl;
+    // }
     return 0;
 }

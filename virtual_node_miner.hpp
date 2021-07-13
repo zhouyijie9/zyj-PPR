@@ -14,6 +14,7 @@
 #include <map>
 #include "utils/timer.h"
 
+
 #define MAX_HASH 1610612741
 #define K 10
 // #define CLUSTER_THRESHOLD 30
@@ -157,6 +158,9 @@ class virtual_node_miner {
             v = v_;
         }
     };
+    struct Node {
+        int outNodesNum = 0;
+    };
 
     std::vector<adjlist> _adjlists;
     size_t _num_node;
@@ -177,6 +181,9 @@ class virtual_node_miner {
     std::vector<std::pair<int, int>> add_edges; // add edges
     // std::vector<bool> is_sort; // 标记该点的出度是否排序
     std::unordered_set<int> sorted_nodes; // 标记该点的出度是否排序
+    std::unordered_map<int, int> vertex_map; //原id: 新id
+    std::unordered_map<int, int> vertex_reverse_map; // 新id: 原id
+    std::vector<Node> nodes; //nodes用来存放点向量
 
 
 public:
@@ -211,45 +218,66 @@ public:
     }
 
     bool load_graph(const std::string &file_path) {
-        auto load_start = time(nullptr);
-
-        FILE *f = fopen(file_path.c_str(), "r");
-
-        if (f == 0) {
-            std::cout << "file cannot open! " << file_path << std::endl;
-            return false;
-        }
-        std::cout << "load: " << file_path << std::endl;
         std::vector<std::pair<int, int>> edges;
-
+        
+        double start_read_file = clock();
+        std::ifstream inFile(file_path);
+        if(!inFile)
+        {
+            std::cout << "open file " << file_path << " failed." << std::endl;
+            return 0;
+        }
+        inFile >> _num_node >> _num_edge;
+        _raw_num_node = _num_node;
+        _raw_num_edge = _num_edge;
+        nodes.resize(_num_node);
         int u = 0;
         int v = 0;
-        _num_node = 0;
-        int t = fscanf(f, "%d %d", &u, &v); // 第一行是n和m，不要
-        while (fscanf(f, "%d %d", &u, &v) > 0)
+        int curr_n = 0;
+        while(inFile >> u >> v)
         {
-            assert(u >= 0);
-            assert(v >= 0);
-            _num_node = std::max(_num_node, size_t(u + 1));
-            _num_node = std::max(_num_node, size_t(v + 1));
+            // 传说中的重新编号：对每个id做一个map映射，映射成0开始的连续编号，写入结果时再映射回最初编号
+            if(vertex_map.find(u) == vertex_map.end()) {
+                vertex_map[u] = curr_n;
+                vertex_reverse_map[curr_n] = u;
+                u = curr_n++;
+            }
+            else {
+                u = vertex_map[u];
+            }
+
+            if(vertex_map.find(v) == vertex_map.end()){
+                vertex_map[v] = curr_n;
+                vertex_reverse_map[curr_n] = v;
+                v = curr_n++;
+            }
+            else {
+                v = vertex_map[v];
+            }
+
             edges.emplace_back(std::pair<int, int>(u, v));
+            nodes[u].outNodesNum = 1;
         }
-        fclose(f);
+        inFile.close();
+
+        for (int u = 0; u < _num_node; u++)
+        {
+            if (nodes[u].outNodesNum == 0)
+            {
+                srand(time(NULL));
+                int random_outNode = rand() % _num_node; // 把随机范围限制在[0, _num_node-1] 之间
+                //nodes[u].outNodes.emplace_back(random_outNode);
+                edges.emplace_back(std::pair<int, int>(u, random_outNode));
+            }
+        }
 
         std::sort(edges.begin(), edges.end());
-
-        _raw_num_node = _num_node;
-
-        _num_edge = edges.size();
-        _raw_num_edge = _num_edge;
 
         _adjlists.clear();
         _adjlists.resize(_num_node); // _num_node max_id+1
         for (auto edge : edges) {
             _adjlists[edge.first].emplace_back(edge.second);
         }
-
-        auto load_end = time(nullptr);
 
         return true;
     }
@@ -504,6 +532,8 @@ public:
             line_cnt++;
             assert(u >= 0);
             assert(v >= 0);
+            u = vertex_map[u];
+            v = vertex_map[v];
             if(type == 'd' || type == 'a'){
                 edges.emplace_back(chage_edge(type, u, v));
                 if(type == 'a'){

@@ -193,6 +193,9 @@ int main(int argc, char const *argv[])
     //string edge_new_path = "";
     //string filename(argv[3]);
     string filename = "zyyyj";
+    double start = clock();
     ppry.run(filename);
+    double finish = clock();
+    cout << "computing time: " << (finish - start) / CLOCKS_PER_SEC << "s\n";
     return 0;
 }
