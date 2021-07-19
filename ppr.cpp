@@ -28,7 +28,8 @@ int main()
 
     vector<Node> nodes; //nodes用来存放点向量
     int source = 0; //我想用文件中的第一个点作为源点，整个实验最后得到的是另外的点关于它的PPR值
-    
+    long long int jisuancishu = 0;
+
     double start_read_file = clock();
     //读文件
     ifstream inFile(edge_path);
@@ -75,23 +76,28 @@ int main()
 
         for(int u = 0; u < vertex_num; ++u)
         {
-            int outDegree = nodes[u].outNodes.size();
-            double teleportValue = (1 - alpha) * nodes[u].residue / outDegree;
+            Node& node = nodes[u]; // 可以加快速度
+
+            int outDegree = node.outNodes.size();
+            double teleportValue = (1 - alpha) * node.residue / outDegree;
             for(int i = 0; i < outDegree; i++)
             {
                 int v = nodes[u].outNodes[i];
                 nodes[v].tmp_residue += teleportValue;
+                jisuancishu++;
             }
-            nodes[u].reserve += alpha * nodes[u].residue;
-            nodes[u].residue = 0;
+            node.reserve += alpha * node.residue;
+            node.residue = 0;
         }
 
         for(int u = 0; u < vertex_num; u++)
         {
-            nodes[u].residue = nodes[u].tmp_residue;
-            nodes[u].tmp_residue = 0;
+            Node& node = nodes[u];
 
-            if(nodes[u].residue / nodes[u].outNodes.size() < threshold)
+            node.residue = node.tmp_residue;
+            node.tmp_residue = 0;
+
+            if(node.residue / node.outNodes.size() < threshold)
                 nodeBelowThr++;
         }
 
@@ -104,7 +110,8 @@ int main()
     double computing_time = (clock() - start_computing) / CLOCKS_PER_SEC; // 输出2：计算时间
     
     printf("%s%d\n", "step = ", cnt);
-    cout << "加载文件时间：" << read_file_time << "\n计算时间" << computing_time << endl;
+    cout << "加载文件时间：" << read_file_time << "\n计算时间：" << computing_time << endl;
+    cout << "计算次数: " << jisuancishu << endl;
     // 将运行时间写入文件
     // string resultPath = "./out/result_ppr_origin.txt";
     // ofstream fout_1(resultPath, ios::app|ios::out);

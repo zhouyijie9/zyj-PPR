@@ -39,10 +39,12 @@ int main(int argc,char *argv[]) {
     }
 
     virtual_node_miner vnminer(CLUSTER_THRESHOLD, VIRTUAL_THRESHOLD);
+    double start_load_file = clock();
     vnminer.load_graph(input_path);
+    std::cout << "load file time: " << (clock()-start_load_file) / CLOCKS_PER_SEC<< "s\n";
     double start = clock();
-    // vnminer.compress(5);
-    vnminer.increment_compress("/home/zyj/zhou/dataset/a2.txt");
+    vnminer.compress(10);
+    // vnminer.increment_compress("/home/zyj/zhou/dataset/d.txt");
     vnminer.write_graph(output_path_e); // write edge file
     vnminer.computeX(); // compute x[v] v in V, The number of real nodes that can be reached from v using virtual edges
     vnminer.computeY(); // y[v]: v's real outadjsum.

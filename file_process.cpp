@@ -162,6 +162,7 @@ void start_from_0_and_make_every_node_degree_not_0(string fileName)
             srand(time(NULL));
             int random_outNode = rand() % n; // 把随机范围限制在[0, vertex_num-1] 之间
             nodes[u].outNodes.emplace_back(random_outNode);
+            m++;
         }
     }
 
