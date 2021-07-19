@@ -97,6 +97,7 @@ public:
         double pre_time = 0;
         double sum_time = 0;
         double start = clock();
+        
         int nodeBelowThr = 0;
         cout << "start iterating...............\n";
         while(1)
@@ -114,10 +115,10 @@ public:
                     int outDegree = node.outNodes.size();
                     for (int i = 0; i < outDegree; i++)
                     {
-                        // Node &v = nodes[node.outNodes[i]];
-                        // v.tmp_residue += teleportVal * v.weight;
-                        int v = node.outNodes[i];
-                        nodes[v].tmp_residue += teleportVal * nodes[v].weight;
+                        Node &v = nodes[node.outNodes[i]];
+                        v.tmp_residue += teleportVal * v.weight;
+                        // int v = node.outNodes[i];
+                        // nodes[v].tmp_residue += teleportVal * nodes[v].weight;
                         jisuancishu++;
                     }
                     node.reserve += alpha * node.residue;
@@ -130,6 +131,8 @@ public:
                     for(int i = 0; i < outDegree; i++){
                         int v = node.outNodes[i];
                         nodes[v].tmp_residue += teleportVal;
+                        // Node &v = nodes[node.outNodes[i]];
+                        // v.tmp_residue += teleportVal;
                         jisuancishu++;
                     }
                     node.tmp_residue = 0;
@@ -143,13 +146,6 @@ public:
                 if (nodes[u].residue / nodes[u].outNodes.size() < threshold)
                     nodeBelowThr++;
             }
-
-            //输出，检查一下
-            // for(int i = 0; i < vertex_num; i++)
-            // {
-            //     if(step < 10)
-            //         cout << "第" << step << "轮，点" << i << "的tmp_residue=" << nodes[i].tmp_residue << "，residue=" << nodes[i].residue << "，reserve=" << nodes[i].reserve << endl;
-            // }
 
             if(nodeBelowThr == virtual_node_start)
                 break;
