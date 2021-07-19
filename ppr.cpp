@@ -82,8 +82,10 @@ int main()
             double teleportValue = (1 - alpha) * node.residue / outDegree;
             for(int i = 0; i < outDegree; i++)
             {
-                int v = nodes[u].outNodes[i];
-                nodes[v].tmp_residue += teleportValue;
+                Node &v = nodes[nodes[u].outNodes[i]];
+                v.tmp_residue += teleportValue;
+                // int v = nodes[u].outNodes[i];
+                // nodes[v].tmp_residue += teleportValue;
                 jisuancishu++;
             }
             node.reserve += alpha * node.residue;
@@ -128,10 +130,12 @@ int main()
     // }
 
     // fout.close();
-    // cout << "每个点的迭代结果：\n";
+    // cout << "正在将每个点的结果写入文件......\n";
+    // string path1 = "./out/r1.txt";
+    // ofstream fout_1(path1, ios::app|ios::out);
     // for(int i = 0; i < vertex_num; i++)  
     // {
-    //     fout_1 << vertex_reverse_map[i] << " residue: " << nodes[i].residue << " reserve: " << nodes[i].reserve << endl;
+    //     fout_1 << i << ", residue: " << nodes[i].residue << ", reserve: " << nodes[i].reserve << endl;
     // }
     // fout_1.close();
     

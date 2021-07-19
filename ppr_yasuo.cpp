@@ -114,9 +114,11 @@ public:
                     int outDegree = node.outNodes.size();
                     for (int i = 0; i < outDegree; i++)
                     {
+                        // Node &v = nodes[node.outNodes[i]];
+                        // v.tmp_residue += teleportVal * v.weight;
                         int v = node.outNodes[i];
                         nodes[v].tmp_residue += teleportVal * nodes[v].weight;
-                        ++jisuancishu;
+                        jisuancishu++;
                     }
                     node.reserve += alpha * node.residue;
                     node.residue = 0;
@@ -128,7 +130,7 @@ public:
                     for(int i = 0; i < outDegree; i++){
                         int v = node.outNodes[i];
                         nodes[v].tmp_residue += teleportVal;
-                        ++jisuancishu;
+                        jisuancishu++;
                     }
                     node.tmp_residue = 0;
                 }
@@ -168,9 +170,16 @@ public:
         // for(int i = 0; i < virtual_node_start; i++)
         //     fout_com << vertex_reverse_map[i] << "点，residue=" << nodes[i].residue << "，reverse=" << nodes[i].reserve << "\n";
         // fout_com.close();
-
+        // cout << "正在将每个点的结果写入文件......\n";
+        // string path2 = "./out/r2.txt";
+        // ofstream fout_1(path2, ios::app | ios::out);
+        // for (int i = 0; i < real_nodes_num; i++)
+        // {
+        //     fout_1 << i << ", residue: " << nodes[i].residue << ", reserve: " << nodes[i].reserve << endl;
+        // }
+        // fout_1.close();
     }
-    
+
     ~PPR_yasuo() {}
 public:
     vector<Node> nodes;
@@ -178,6 +187,7 @@ public:
     int all_nodes_num; // 所有点的个数
     int real_nodes_num; // 真实点的个数
     long long int jisuancishu = 0;
+
 };
 
 int main(int argc, char const *argv[])
