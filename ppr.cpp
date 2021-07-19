@@ -17,85 +17,41 @@ struct Node {
     double reserve = 0;
 };
 
-//int main(int argc, char const *argv[]) //会传入两个参数：argv[1]-edgepath和argv[2]-threshold
+// int main(int argc, char const *argv[]) //会传入两个参数：argv[1]-edgepath和argv[2]-threshold
 int main()
 {
-    //string edge_path = argv[1];
-    //double threshold = atof(argv[2]);
-    string edge_path = "/home/zyj/zhou/dataset/web-Stanford1.txt";
+    // string edge_path = argv[1];
+    // double threshold = atof(argv[2]);
+    // string dest_path = argv[3];
+    string edge_path = "/home/zyj/zhou/dataset/web-Google1.txt";
     double threshold = 1e-6;
 
-    // int vertex_num = 0; // 所有点的个数
-    //unordered_map<int, Node> nodes; //nodes存放页面向量
     vector<Node> nodes; //nodes用来存放点向量
-    unordered_map<int, int> vertex_map; //原id: 新id
-    unordered_map<int, int> vertex_reverse_map; // 新id: 原id
     int source = 0; //我想用文件中的第一个点作为源点，整个实验最后得到的是另外的点关于它的PPR值
     
     double start_read_file = clock();
-    //先读文件
+    //读文件
     ifstream inFile(edge_path);
     if(!inFile)
     {
         cout << "open file " << edge_path << " failed." << endl;
         return 0;
     }
+
     int vertex_num, edge_num;
     inFile >> vertex_num >> edge_num;
     nodes.resize(vertex_num);
     
     int u, v;
-    int flag = 0;
-    int curr_n = 0;
     while(inFile >> u >> v)
     {
-        if(flag == 0)
-        {
-            source = u;//用文件中的第一个点作为源点
-            flag = 1;
-        }
-        // 传说中的重新编号：对每个id做一个map映射，映射成0开始的连续编号，写入结果时再映射回最初编号
-        if(vertex_map.find(u) == vertex_map.end()) {
-            vertex_map[u] = curr_n;
-            vertex_reverse_map[curr_n] = u;
-            u = curr_n++;
-        }
-        else {
-            u = vertex_map[u];
-        }
-
-        if(vertex_map.find(v) == vertex_map.end()){
-            vertex_map[v] = curr_n;
-            vertex_reverse_map[curr_n] = v;
-            v = curr_n++;
-        }
-        else {
-            v = vertex_map[v];
-        }
-
         nodes[u].outNodes.emplace_back(v);
-        //然后取vertex_reverse_map[key值]可以得到实际图中的点
     }
-    //cout << "curr_n=" << curr_n << ", vertex_num=" << vertex_num << endl;
     inFile.close();
-    nodes[vertex_map[source]].residue = 1;
+    nodes[0].residue = 1;
 
-    double finish_read_file = clock();
-    cout << "read file time: " << (finish_read_file - start_read_file) / CLOCKS_PER_SEC << "s\n";
-
-    // 让出度为0的点随机指向一个点
-    for(int u = 0; u < vertex_num; u++)
-    {
-        int outDegree = nodes[u].outNodes.size();
-        if (outDegree == 0)
-        {
-            srand(time(NULL));
-            int random_outNode = rand() % vertex_num; // 把随机范围限制在[0, vertex_num-1] 之间
-            nodes[u].outNodes.emplace_back(random_outNode);
-        }
-    }
-
-
+    double read_file_time = (clock() - start_read_file) / CLOCKS_PER_SEC; // 输出1：读文件时间
+    
     //------------------------------------------------
     //每个点的residue随机赋值0~1
     // srand(time(NULL));
@@ -108,27 +64,26 @@ int main()
     //------------------------------------------------
 
     int cnt = 0; // count the number of iterations
+    long long int compute_cishu = 0;
     double start_computing = clock();
 
-    // start iterating, stop when every node's residue below threshold
-    // 每个点的residue的分配：有alpha部分转换为自己的reserve，有1-alpha部分平均传递给每个邻居
+    // 开始迭代，根据公式，当每个点的【residue/出度<阈值】时停止迭代
+    // 每个点的residue：有alpha部分转换为自己的reserve，有1-alpha部分平均传递给每个邻居
     while(1)
     {
-        int nodeBelowThr = 0; // residue值低于阈值的点 个数
+        int nodeBelowThr = 0; // residue/出度 的值低于阈值的点个数
 
-        for(int u = 0; u < vertex_num; u++)
+        for(int u = 0; u < vertex_num; ++u)
         {
             int outDegree = nodes[u].outNodes.size();
-
             double teleportValue = (1 - alpha) * nodes[u].residue / outDegree;
             for(int i = 0; i < outDegree; i++)
             {
                 int v = nodes[u].outNodes[i];
-                //nodes[v].residue += teleportValue;
                 nodes[v].tmp_residue += teleportValue;
             }
             nodes[u].reserve += alpha * nodes[u].residue;
-            //nodes[u].residue = 0; //这里不用赋值为0也没事，第./+7行用tmp_residue进行值的替换 效果一样的
+            nodes[u].residue = 0;
         }
 
         for(int u = 0; u < vertex_num; u++)
@@ -140,18 +95,18 @@ int main()
                 nodeBelowThr++;
         }
 
-
         if(nodeBelowThr == vertex_num)
             break;
 
         cnt++;
     }
 
-    cout << "computing time: " << (clock() - start_computing) / CLOCKS_PER_SEC << "s\n";
+    double computing_time = (clock() - start_computing) / CLOCKS_PER_SEC; // 输出2：计算时间
     
     printf("%s%d\n", "step = ", cnt);
+    cout << "加载文件时间：" << read_file_time << "\n计算时间" << computing_time << endl;
     // 将运行时间写入文件
-    // string resultPath = "./out/result.txt";
+    // string resultPath = "./out/result_ppr_origin.txt";
     // ofstream fout_1(resultPath, ios::app|ios::out);
     // fout_1 << "normal_graph_time:" << (clock()-start) / CLOCKS_PER_SEC << endl;
     // fout_1 << "normal_graph_step:" << cnt << endl;
@@ -167,9 +122,11 @@ int main()
 
     // fout.close();
     // cout << "每个点的迭代结果：\n";
-    // for(int i = 0; i < vertex_num; i++)
+    // for(int i = 0; i < vertex_num; i++)  
     // {
-    //     cout << vertex_reverse_map[i] << " residue: " << nodes[i].residue << " reserve: " << nodes[i].reserve << endl;
+    //     fout_1 << vertex_reverse_map[i] << " residue: " << nodes[i].residue << " reserve: " << nodes[i].reserve << endl;
     // }
+    // fout_1.close();
+    
     return 0;
 }
