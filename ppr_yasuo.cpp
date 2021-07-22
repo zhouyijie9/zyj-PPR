@@ -82,8 +82,8 @@ public:
         string v_path = "/home/zyj/zhou/PPR-proj/out/" + filename + ".v"; // 压缩图点文件，包含超点和源顶点的对应关系
         string e_path = "/home/zyj/zhou/PPR-proj/out/" + filename + ".e"; // 压缩图边文件，超点之间的边
         //string edge_new_path = edge_new_path_;  // 原始图文件，即解压之后的图
-        string outPath = "/home/zyj/zhou/PPR-proj/out/ppr_yasuo_r.txt";   // 保存最终计算结果
-        string outPath_compress = "/home/zyj/zhou/PPR-proj/out/ppr_yasuo_com.txt";   // 保存第一次收敛结果
+        // string outPath = "/home/zyj/zhou/PPR-proj/out/ppr_yasuo_r.txt";   // 保存最终计算结果
+        // string outPath_compress = "/home/zyj/zhou/PPR-proj/out/ppr_yasuo_com.txt";   // 保存第一次收敛结果
         read_nodes(v_path);
         getNodesVec(e_path);
 
@@ -111,49 +111,45 @@ public:
 
             for(int i = 0; i < virtual_node_start; i++)
             {
-                Node &node = nodes[i];
-
-                double teleportVal = (1 - alpha) * node.residue / node.outAdjNum;
-                int outDegree = node.outNodes.size();
+                Node &r_node = nodes[i];
+                double teleportVal = (1 - alpha) * r_node.residue / r_node.outAdjNum;
+                int outDegree = r_node.outNodes.size();
                 for (int i = 0; i < outDegree; i++)
                 {
-                    Node &v = nodes[node.outNodes[i]];
+                    Node &v = nodes[r_node.outNodes[i]];
                     v.tmp_residue += teleportVal * v.weight;
                     jisuancishu++;
                 }
-                node.reserve += alpha * node.residue;
-                node.residue = 0;
+                r_node.reserve += alpha * r_node.residue;
+                r_node.residue = 0;
             }
 
             real_compute_time += clock();
-
             virtual_compute_time -= clock();
 
             for(int i = virtual_node_start; i < all_nodes_num; i++)
             {
-                Node &node = nodes[i];
-
-                int outDegree = node.outAdjNum;
-                double teleportVal = node.tmp_residue / outDegree; //虚拟点的outAdjNum和weight是一样的
-
+                Node &v_node = nodes[i];
+                int outDegree = v_node.outNodes.size();
+                double teleportVal = v_node.tmp_residue / outDegree; //虚拟点的outAdjNum和weight是一样的
                 for (int i = 0; i < outDegree; i++)
                 {
-                    Node &v = nodes[node.outNodes[i]];
+                    Node &v = nodes[v_node.outNodes[i]];
                     v.tmp_residue += teleportVal;
                     jisuancishu++;
                 }
-                node.tmp_residue = 0;
+                v_node.tmp_residue = 0;
             }
 
             virtual_compute_time += clock();
 
             double curr_teleportValue = 0;
-            for (int u = 0; u < virtual_node_start; u++) {
-                Node& node = nodes[u];
-                node.residue = node.tmp_residue;
-                node.tmp_residue = 0;
+            for (int i = 0; i < virtual_node_start; i++) {
+                Node& r_node = nodes[i];
+                r_node.residue = r_node.tmp_residue;
+                r_node.tmp_residue = 0;
 
-                curr_teleportValue = node.residue / node.outNodes.size();
+                curr_teleportValue = r_node.residue / r_node.outNodes.size();
                 if (curr_teleportValue < threshold)
                     nodeBelowThr++;
             }
@@ -187,6 +183,14 @@ public:
         //     fout_1 << i << ", residue: " << nodes[i].residue << ", reserve: " << nodes[i].reserve << endl;
         // }
         // fout_1.close();
+
+        string outPath = "./out/ppr_yasuo.txt";
+        cout << "out path: " << outPath << endl;
+        ofstream fout(outPath);
+        for(int i = 0; i < real_nodes_num; i++)
+        {
+            fout << i << " residue: " << nodes[i].residue << " reserve: " << nodes[i].reserve << endl;
+        }
     }
 
     ~PPR_yasuo() {}

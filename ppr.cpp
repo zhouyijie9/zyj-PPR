@@ -109,15 +109,15 @@ int main()
     // fout_1 << "normal_graph_step:" << cnt << endl;
     // fout_1.close();
 
-    // string outPath = "./out/ppr.txt";
-    // cout << "out path: " << outPath << endl;
-    // ofstream fout(outPath);
-    // for(int i = 0; i < vertex_num; i++)
-    // {
-    //     fout << vertex_reverse_map[i] << " residue: " << nodes[i].residue << " reserve: " << nodes[i].reserve << endl;
-    // }
+    string outPath = "./out/ppr.txt";
+    cout << "out path: " << outPath << endl;
+    ofstream fout(outPath);
+    for(int i = 0; i < vertex_num; i++)
+    {
+        fout << i << " residue: " << nodes[i].residue << " reserve: " << nodes[i].reserve << endl;
+    }
 
-    // fout.close();
+    fout.close();
     // cout << "正在将每个点的结果写入文件......\n";
     // string path1 = "./out/r1.txt";
     // ofstream fout_1(path1, ios::app|ios::out);
