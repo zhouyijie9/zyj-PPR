@@ -53,19 +53,7 @@ int main()
 
     double read_file_time = (clock() - start_read_file) / CLOCKS_PER_SEC; // 输出1：读文件时间
     
-    //------------------------------------------------
-    //每个点的residue随机赋值0~1
-    // srand(time(NULL));
-    // int N = 999; //精度为小数点后面3位
-    // for(int i = 0; i < vertex_num; i++)
-    // {
-    //     nodes[vertex_map[i]].residue = rand() % (N + 1) / (float)(N + 1);
-    //     cout << "点" << i << "的初始residue=" << nodes[vertex_map[i]].residue << endl;
-    // }
-    //------------------------------------------------
-
-    int cnt = 0; // count the number of iterations
-    long long int compute_cishu = 0;
+    int cnt = 0; // 统计迭代次数
     double start_computing = clock();
 
     // 开始迭代，根据公式，当每个点的【residue/出度<阈值】时停止迭代
@@ -84,22 +72,22 @@ int main()
             {
                 Node &v = nodes[nodes[u].outNodes[i]];
                 v.tmp_residue += teleportValue;
-                // int v = nodes[u].outNodes[i];
-                // nodes[v].tmp_residue += teleportValue;
                 jisuancishu++;
             }
             node.reserve += alpha * node.residue;
             node.residue = 0;
         }
 
-        for(int u = 0; u < vertex_num; u++)
+        double curr_teleportValue = 0;
+        for (int u = 0; u < vertex_num; u++)
         {
             Node& node = nodes[u];
 
             node.residue = node.tmp_residue;
             node.tmp_residue = 0;
 
-            if(node.residue / node.outNodes.size() < threshold)
+            curr_teleportValue = node.residue / node.outNodes.size();
+            if (curr_teleportValue < threshold)
                 nodeBelowThr++;
         }
 

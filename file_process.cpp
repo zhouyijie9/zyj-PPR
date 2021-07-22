@@ -198,7 +198,7 @@ int main()
     // 把str_insert_to_line1插入第一行
     InsertData(fileName, str_insert_to_line1);
 
-    // 预处理数据集，让点的序号从0开始，然后让出度为0的点随机指向一个点，这个点可以包括它自己
+    // 预处理数据集，让点的下标从0开始，然后让出度为0的点随机指向一个点，这个点可以包括它自己
     start_from_0_and_make_every_node_degree_not_0(fileName);
 
     return 0;

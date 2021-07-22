@@ -44,3 +44,27 @@ web_stanford.txt前10行：
 
 
 
+## 运行步骤
+
+### 1. 准备数据集web-Google1.txt，用file_process.cpp处理一下。
+```
+g++ file_process.cpp
+./a.out
+```
+
+### 2. 对处理好的数据集进行压缩。
+```
+./run.sh
+```
+
+### 3. 在原图上计算PPR（注意修改cpp文件中的edge_path变量）
+```
+g++ ppr.cpp
+./a.out
+```
+
+### 4. 在压缩图上计算PPR（注意修改cpp文件中的filename变量）
+```
+g++ ppr_yasuo.cpp
+./a.out
+```
