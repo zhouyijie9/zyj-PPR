@@ -499,8 +499,8 @@ public:
         fprintf(fp, "nor_edge:%d\n", int(_raw_num_edge));
         fprintf(fp, "com_node:%d\n", int(_num_node));
         fprintf(fp, "com_edge:%d\n", int(_num_edge));
-        fprintf(fp, "edge compression rate:%f\n", float(int(_num_node)) / int(_raw_num_node));
-        fprintf(fp, "node compression rate:%f\n", float(int(_num_edge)) / int(_raw_num_edge));
+        fprintf(fp, "node compression rate:%f\n", float(int(_num_node)) / int(_raw_num_node));
+        fprintf(fp, "edge compression rate:%f\n", float(int(_num_edge)) / int(_raw_num_edge));
         fclose(fp);
     }
 

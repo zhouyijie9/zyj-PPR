@@ -93,13 +93,15 @@ public:
         double start = clock();
         double real_compute_time = 0;
         double virtual_compute_time = 0;
+        int real_edge = 0;
+        int virtual_edge = 0;
         
         int nodeBelowThr = 0;
         while(1)
         {
             nodeBelowThr = 0; // residue值低于阈值的点的个数
 
-            real_compute_time -= clock();
+            // real_compute_time -= clock();
 
             for(int i = 0; i < virtual_node_start; i++)
             {
@@ -116,9 +118,9 @@ public:
                 r_node.residue = 0;
             }
 
-            real_compute_time += clock();
+            // real_compute_time += clock();
 
-            virtual_compute_time -= clock();
+            // virtual_compute_time -= clock();
 
             for(int i = virtual_node_start; i < all_nodes_num; i++)
             {
@@ -134,7 +136,7 @@ public:
                 v_node.tmp_residue = 0;
             }
 
-            virtual_compute_time += clock();
+            // virtual_compute_time += clock();
 
             for (int i = 0; i < virtual_node_start; i++) {
                 Node& r_node = nodes[i];
@@ -154,9 +156,11 @@ public:
         cout << "step=" << step << ", Compressed graph convergence" << endl;
         cout << "computing time: " << pre_time << "s" << endl;
         cout << "计算次数: " << jisuancishu << endl;
-        cout << "real time: " << real_compute_time/CLOCKS_PER_SEC << "s" << endl;
-        cout << "virtual time: " << virtual_compute_time/CLOCKS_PER_SEC << "s" << endl;
-        
+        // cout << "real time: " << real_compute_time/CLOCKS_PER_SEC << "s" << endl;
+        // cout << "virtual time: " << virtual_compute_time/CLOCKS_PER_SEC << "s" << endl;
+        // cout << "real edge: " << real_edge << endl;
+        // cout << "virtual edge: " << virtual_edge << endl;
+
         // 测试: 输出压缩计算的结果
         // cout << "\nout path: " << outPath_compress << endl;
         // ofstream fout_com(outPath_compress);
@@ -193,7 +197,7 @@ int main(int argc, char const *argv[])
     //string edge_new_path(argv[2]);
     //string edge_new_path = "";
     //string filename(argv[3]);
-    string filename = "g_yasuo";
+    string filename = "google_yasuo";
     // double start = clock();
     ppry.run(filename);
     // double finish = clock();
