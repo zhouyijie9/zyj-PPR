@@ -86,8 +86,7 @@ int main()
             node.residue = node.tmp_residue;
             node.tmp_residue = 0;
 
-            curr_teleportValue = node.residue / node.outNodes.size();
-            if (curr_teleportValue < threshold)
+            if (node.residue / node.outNodes.size() < threshold)
                 nodeBelowThr++;
         }
 

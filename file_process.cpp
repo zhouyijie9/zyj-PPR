@@ -187,7 +187,7 @@ int main()
 {
     int m = 0;
     int n = 0;
-    string fileName = "/home/zyj/zhou/dataset/web-Google1.txt";
+    string fileName = "/home/zyj/zhou/dataset/web-stf.txt";
 
     // 从第三行中获取n和m
     string str_insert_to_line1 = get_n_m_form_line3(fileName, m, n); 

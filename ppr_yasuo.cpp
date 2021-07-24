@@ -56,7 +56,7 @@ public:
         }
         //cout << "vertex_num=" << vertex_num << endl;
         inFile.close();
-        cout << "finish read file... " << compress_vertex_path << endl;
+        // cout << "finish read file... " << compress_vertex_path << endl;
     }
 
     //读边，把每个点的信息（outNodes，reserve，residue）存到nodes里
@@ -72,29 +72,22 @@ public:
             nodes[u].outNodes.emplace_back(v);
         }
         inFile.close();
-        cout << "finish read file... " << compress_edge_path << endl;
+        // cout << "finish read file... " << compress_edge_path << endl;
     }
 
    
     int run(string filename)
     {
-        double start_read_file = clock();
+        // double start_read_file = clock();
         string v_path = "/home/zyj/zhou/PPR-proj/out/" + filename + ".v"; // 压缩图点文件，包含超点和源顶点的对应关系
         string e_path = "/home/zyj/zhou/PPR-proj/out/" + filename + ".e"; // 压缩图边文件，超点之间的边
-        //string edge_new_path = edge_new_path_;  // 原始图文件，即解压之后的图
-        // string outPath = "/home/zyj/zhou/PPR-proj/out/ppr_yasuo_r.txt";   // 保存最终计算结果
-        // string outPath_compress = "/home/zyj/zhou/PPR-proj/out/ppr_yasuo_com.txt";   // 保存第一次收敛结果
         read_nodes(v_path);
         getNodesVec(e_path);
 
         cout << "vertex_num=" << all_nodes_num << ", virtual_node_start=" << virtual_node_start << endl;
-        cout << "read file time: " << (clock() - start_read_file) / CLOCKS_PER_SEC << endl;
-        // 将运行时间写入文件
-        // string resultPath = "./out/result2.txt";
-        // ofstream fout_1(resultPath, ios::app);
+        //cout << "read file time: " << (clock() - start_read_file) / CLOCKS_PER_SEC << endl;
 
         int step = 0; //统计迭代几轮
-        // int increment_num = 1;
         double pre_time = 0;
         double sum_time = 0;
         double start = clock();
@@ -102,7 +95,6 @@ public:
         double virtual_compute_time = 0;
         
         int nodeBelowThr = 0;
-        cout << "start iterating...............\n";
         while(1)
         {
             nodeBelowThr = 0; // residue值低于阈值的点的个数
@@ -125,6 +117,7 @@ public:
             }
 
             real_compute_time += clock();
+
             virtual_compute_time -= clock();
 
             for(int i = virtual_node_start; i < all_nodes_num; i++)
@@ -143,14 +136,12 @@ public:
 
             virtual_compute_time += clock();
 
-            double curr_teleportValue = 0;
             for (int i = 0; i < virtual_node_start; i++) {
                 Node& r_node = nodes[i];
                 r_node.residue = r_node.tmp_residue;
                 r_node.tmp_residue = 0;
 
-                curr_teleportValue = r_node.residue / r_node.outNodes.size();
-                if (curr_teleportValue < threshold)
+                if (r_node.residue / r_node.outAdjNum < threshold)
                     nodeBelowThr++;
             }
 
@@ -160,29 +151,19 @@ public:
             step++;
         }
         pre_time = (clock()-start) / CLOCKS_PER_SEC;
-        cout << "finish iterating...............\n";
         cout << "step=" << step << ", Compressed graph convergence" << endl;
         cout << "computing time: " << pre_time << "s" << endl;
         cout << "计算次数: " << jisuancishu << endl;
         cout << "real time: " << real_compute_time/CLOCKS_PER_SEC << "s" << endl;
         cout << "virtual time: " << virtual_compute_time/CLOCKS_PER_SEC << "s" << endl;
-        // fout_1 << "compress_graph_1st_time:" << pre_time << endl;
-        // fout_1 << "compress_graph_1st_step:" << step << endl;
-        // fout_1.close();
+        
         // 测试: 输出压缩计算的结果
         // cout << "\nout path: " << outPath_compress << endl;
         // ofstream fout_com(outPath_compress);
         // for(int i = 0; i < virtual_node_start; i++)
         //     fout_com << vertex_reverse_map[i] << "点，residue=" << nodes[i].residue << "，reverse=" << nodes[i].reserve << "\n";
         // fout_com.close();
-        // cout << "正在将每个点的结果写入文件......\n";
-        // string path2 = "./out/r2.txt";
-        // ofstream fout_1(path2, ios::app | ios::out);
-        // for (int i = 0; i < real_nodes_num; i++)
-        // {
-        //     fout_1 << i << ", residue: " << nodes[i].residue << ", reserve: " << nodes[i].reserve << endl;
-        // }
-        // fout_1.close();
+        
 
         string outPath = "./out/ppr_yasuo.txt";
         cout << "out path: " << outPath << endl;
