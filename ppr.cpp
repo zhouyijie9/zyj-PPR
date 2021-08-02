@@ -29,7 +29,7 @@ int main()
     //vector<Node> nodes; //nodes用来存放点向量
     int source = 0; //我想用文件中的第一个点作为源点，整个实验最后得到的是另外的点关于它的PPR值
     // int sid = 0;
-    // long long int jisuancishu = 0;
+    long long int jisuancishu = 0;
 
     double start_read_file_time = clock();
 
@@ -102,6 +102,7 @@ int main()
             {
                 int curr_node = edges[pos_0 + j];
                 tmp_residues[curr_node] += teleport_value;
+                jisuancishu++;
             }
             reserves[i] += alpha * residues[i];
             // residues[i] = 0;
@@ -131,16 +132,17 @@ int main()
 
     printf("%s%d\n", "step = ", cnt);
     cout << "加载文件时间：" << read_file_time << "\n计算时间：" << computing_time << endl;
+    cout << "计算次数：" << jisuancishu << endl;
 
-    string outPath = "./out/ppr2.txt";
-    cout << "out path: " << outPath << endl;
-    ofstream fout(outPath);
-    for(int i = 0; i < vertex_num; i++)
-    {
-        fout << i << " residue: " << residues[i] << " reserve: " << reserves[i] << endl;
-    }
+    // string outPath = "./out/ppr2.txt";
+    // cout << "out path: " << outPath << endl;
+    // ofstream fout(outPath);
+    // for(int i = 0; i < vertex_num; i++)
+    // {
+    //     fout << i << " residue: " << residues[i] << " reserve: " << reserves[i] << endl;
+    // }
 
-    fout.close();
+    // fout.close();
     
     return 0;
 }

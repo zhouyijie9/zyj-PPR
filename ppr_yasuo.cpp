@@ -14,18 +14,6 @@ using namespace std;
 double alpha = 0.15;
 double threshold = 1e-6;
 
-// 用于压缩图的节点
-struct Node
-{
-    vector<int> outNodes; // 出邻居, 不能有重复的边
-    double residue = 0;
-    double tmp_residue = 0;
-    double reserve = 0;
-
-    int weight = 1;    // 如果是真实点则为1，虚拟点则为其通过虚拟边可以到达的真实点的个数
-    int outAdjNum = 0; // 出度：即真实连接的点的个数。比如0连了一个真实点1，一个虚拟点2；2连了三个真实点。那0的outAdjNum就是4
-};
-
 class PPR_yasuo{
 public:
     PPR_yasuo(){}
@@ -40,42 +28,61 @@ public:
         inFile >> all_nodes_num >> real_nodes_num;  // 文件第一行表示所有顶点个数
         virtual_node_start = real_nodes_num;
 
-        // 申请node向量
-        nodes.resize(all_nodes_num);
-        int u, weight_, outAdjNum_;
+        residues.resize(all_nodes_num); 
+        residues[0] = 1.0;
+        tmp_residues.resize(all_nodes_num);
+        reserves.resize(real_nodes_num);
+        weights.resize(all_nodes_num);
+        out_adj_nums.resize(all_nodes_num);
+        start_pos.resize(all_nodes_num + 1);
 
-        while(inFile >> u >> weight_ >> outAdjNum_){
-            nodes[u].weight = weight_;
-            nodes[u].outAdjNum = outAdjNum_;
-            // if(weight_ > 1) {
-            //     // 虚拟点在文件最后，记录第一个出现的位置
-            //     if(virtual_node_start == 0){
-            //         virtual_node_start = u;
-            //     }
-            // }
+        int u, weight_, out_adj_num_;
+        while (inFile >> u >> weight_ >> out_adj_num_)
+        {
+            weights[u] = weight_;
+            out_adj_nums[u] = out_adj_num_;
         }
-        //cout << "vertex_num=" << vertex_num << endl;
         inFile.close();
-        // cout << "finish read file... " << compress_vertex_path << endl;
     }
 
-    //读边，把每个点的信息（outNodes，reserve，residue）存到nodes里
+    //读边
     void getNodesVec(string compress_edge_path) {
+        
         int u, v;
-        nodes[0].residue = 1; // 第一个点是原点
 
+        //----------------------------------------------------------------
+        int line_count = 0; //边数，最好能在压缩图的时候就算出来
+        ifstream inFile0(compress_edge_path);
+        if (!inFile0) {
+            cout << "open file " << compress_edge_path << " failed." << endl;
+        }
+        while (inFile0 >> u >> v) {
+            line_count++;
+        }
+        cout <<"line_count: " << line_count << endl;
+        inFile0.close();
+        //------------------------------------------------------------------
+
+        start_pos[all_nodes_num] = line_count;
+        edges.resize(line_count);
+        int curr_index = -1;
+        int pos = 0;
         ifstream inFile(compress_edge_path);
         if (!inFile) {
             cout << "open file " << compress_edge_path << " failed." << endl;
         }
         while (inFile >> u >> v) {
-            nodes[u].outNodes.emplace_back(v);
+            edges.emplace_back(v);
+            if (u != curr_index)
+            {
+                curr_index = u;
+                start_pos[u] = pos;
+            }
+            pos++;
         }
         inFile.close();
-        // cout << "finish read file... " << compress_edge_path << endl;
     }
 
-   
     int run(string filename)
     {
         // double start_read_file = clock();
@@ -89,33 +96,41 @@ public:
 
         int step = 0; //统计迭代几轮
         double pre_time = 0;
-        double sum_time = 0;
+        // double sum_time = 0;
         double start = clock();
-        double real_compute_time = 0;
-        double virtual_compute_time = 0;
-        int real_edge = 0;
-        int virtual_edge = 0;
+        // double real_compute_time = 0;
+        // double virtual_compute_time = 0;
+        // int real_edge = 0;
+        // int virtual_edge = 0;
         
-        int nodeBelowThr = 0;
-        while(1)
+        int node_below_thr = 0;
+        int pos_0, pos_1;
+        int out_degree;
+        while (1)
         {
-            nodeBelowThr = 0; // residue值低于阈值的点的个数
+            node_below_thr = 0; // residue值低于阈值的点的个数
 
             // real_compute_time -= clock();
 
             for(int i = 0; i < virtual_node_start; i++)
             {
-                Node &r_node = nodes[i];
-                double teleportVal = (1 - alpha) * r_node.residue / r_node.outAdjNum;
-                int outDegree = r_node.outNodes.size();
-                for (int i = 0; i < outDegree; i++)
+                pos_0 = start_pos[i];
+                pos_1 = start_pos[i + 1];
+                out_degree = pos_1 - pos_0;
+
+                double teleport_value = (1 - alpha) * residues[i] / out_adj_nums[i];
+                // int outDegree = r_node.outNodes.size();
+                for (int j = 0; j < out_degree; j++)
                 {
-                    Node &v = nodes[r_node.outNodes[i]];
-                    v.tmp_residue += teleportVal * v.weight;
-                    jisuancishu++;
+                    int curr_node = edges[pos_0 + j];
+                    tmp_residues[curr_node] += teleport_value * weights[curr_node];
+                    // Node &v = nodes[r_node.outNodes[i]];
+                    // v.tmp_residue += teleportVal * v.weight;
+                    // jisuancishu++;
                 }
-                r_node.reserve += alpha * r_node.residue;
-                r_node.residue = 0;
+                // r_node.reserve += alpha * r_node.residue;
+                // r_node.residue = 0;
+                reserves[i] += alpha * residues[i];
             }
 
             // real_compute_time += clock();
@@ -124,33 +139,54 @@ public:
 
             for(int i = virtual_node_start; i < all_nodes_num; i++)
             {
-                Node &v_node = nodes[i];
-                int outDegree = v_node.outNodes.size();
-                double teleportVal = v_node.tmp_residue / outDegree; //虚拟点的outAdjNum和weight是一样的
-                for (int i = 0; i < outDegree; i++)
+                // Node &v_node = nodes[i];
+                pos_0 = start_pos[i];
+                pos_1 = start_pos[i + 1];
+                out_degree = pos_1 - pos_0;
+
+                // int outDegree = v_node.outNodes.size();
+                double teleport_value = tmp_residues[i] / out_degree;
+                for (int j = 0; j < out_degree; j++)
                 {
-                    Node &v = nodes[v_node.outNodes[i]];
-                    v.tmp_residue += teleportVal;
+                    // Node &v = nodes[v_node.outNodes[i]];
+                    // v.tmp_residue += teleportVal;
+                    int curr_node = edges[pos_0 + j];
+                    tmp_residues[curr_node] += teleport_value;
                     jisuancishu++;
                 }
-                v_node.tmp_residue = 0;
+                // v_node.tmp_residue = 0;
+                tmp_residues[i] = 0;
             }
 
             // virtual_compute_time += clock();
 
-            for (int i = 0; i < virtual_node_start; i++) {
-                Node& r_node = nodes[i];
-                r_node.residue = r_node.tmp_residue;
-                r_node.tmp_residue = 0;
+            // for (int i = 0; i < virtual_node_start; i++) {
+            //     Node& r_node = nodes[i];
+            //     r_node.residue = r_node.tmp_residue;
+            //     r_node.tmp_residue = 0;
 
-                if (r_node.residue / r_node.outAdjNum < threshold)
-                    nodeBelowThr++;
+            //     if (r_node.residue / r_node.outAdjNum < threshold)
+            //         nodeBelowThr++;
+            // }
+
+            for(int i = 0; i < virtual_node_start; i++)
+            {
+                pos_0 = start_pos[i];
+                pos_1 = start_pos[i + 1];
+                out_degree = pos_1 - pos_0;
+
+                residues[i] = tmp_residues[i];
+                tmp_residues[i] = 0;
+
+                if (residues[i] / out_degree < threshold)
+                    node_below_thr++;
             }
 
-            if(nodeBelowThr == virtual_node_start)
+            if(node_below_thr == virtual_node_start)
                 break;
 
             step++;
+            node_below_thr = 0;
         }
         pre_time = (clock()-start) / CLOCKS_PER_SEC;
         cout << "step=" << step << ", Compressed graph convergence" << endl;
@@ -169,22 +205,30 @@ public:
         // fout_com.close();
         
 
-        string outPath = "./out/ppr_yasuo.txt";
+        string outPath = "./out/ppr_yasuo2.txt";
         cout << "out path: " << outPath << endl;
         ofstream fout(outPath);
         for(int i = 0; i < real_nodes_num; i++)
         {
-            fout << i << " residue: " << nodes[i].residue << " reserve: " << nodes[i].reserve << endl;
+            fout << i << " residue: " << residues[i] << " reserve: " << reserves[i] << endl;
         }
+        fout.close();
     }
 
     ~PPR_yasuo() {}
 public:
-    vector<Node> nodes;
+    // vector<Node> nodes;
     int virtual_node_start; // 虚拟点的第一个id
     int all_nodes_num; // 所有点的个数
     int real_nodes_num; // 真实点的个数
     long long int jisuancishu = 0;
+    vector<double> residues;
+    vector<double> tmp_residues;
+    vector<double> reserves;
+    vector<int> weights;
+    vector<int> out_adj_nums;
+    vector<int> start_pos;
+    vector<int> edges;
 
 };
 
