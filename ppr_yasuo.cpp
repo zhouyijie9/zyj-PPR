@@ -28,13 +28,12 @@ public:
         inFile >> all_nodes_num >> real_nodes_num;  // 文件第一行表示所有顶点个数
         virtual_node_start = real_nodes_num;
 
-        residues.resize(all_nodes_num); 
-        residues[0] = 1.0;
-        tmp_residues.resize(all_nodes_num);
+        residues.resize(real_nodes_num); 
         reserves.resize(real_nodes_num);
+        tmp_residues.resize(all_nodes_num);
         weights.resize(all_nodes_num);
         out_adj_nums.resize(all_nodes_num);
-        start_pos.resize(all_nodes_num + 1);
+        
 
         int u, weight_, out_adj_num_;
         while (inFile >> u >> weight_ >> out_adj_num_)
@@ -59,19 +58,22 @@ public:
         while (inFile0 >> u >> v) {
             line_count++;
         }
-        cout <<"line_count: " << line_count << endl;
+        // cout <<"line_count: " << line_count << endl;
         inFile0.close();
         //------------------------------------------------------------------
 
+        start_pos.resize(all_nodes_num + 1);
         start_pos[all_nodes_num] = line_count;
-        edges.resize(line_count);
+        //edges.resize(line_count, -1);
         int curr_index = -1;
         int pos = 0;
         ifstream inFile(compress_edge_path);
         if (!inFile) {
             cout << "open file " << compress_edge_path << " failed." << endl;
         }
-        while (inFile >> u >> v) {
+        int mmm = 0;
+        while (inFile >> u >> v)
+        {
             edges.emplace_back(v);
             if (u != curr_index)
             {
@@ -91,7 +93,7 @@ public:
         read_nodes(v_path);
         getNodesVec(e_path);
 
-        cout << "vertex_num=" << all_nodes_num << ", virtual_node_start=" << virtual_node_start << endl;
+        // cout << "vertex_num=" << all_nodes_num << ", virtual_node_start=" << virtual_node_start << endl;
         //cout << "read file time: " << (clock() - start_read_file) / CLOCKS_PER_SEC << endl;
 
         int step = 0; //统计迭代几轮
@@ -102,13 +104,14 @@ public:
         // double virtual_compute_time = 0;
         // int real_edge = 0;
         // int virtual_edge = 0;
+        residues[0] = 1.0;
         
         int node_below_thr = 0;
         int pos_0, pos_1;
         int out_degree;
         while (1)
         {
-            node_below_thr = 0; // residue值低于阈值的点的个数
+            // node_below_thr = 0; // residue值低于阈值的点的个数
 
             // real_compute_time -= clock();
 
@@ -118,19 +121,20 @@ public:
                 pos_1 = start_pos[i + 1];
                 out_degree = pos_1 - pos_0;
 
-                double teleport_value = (1 - alpha) * residues[i] / out_adj_nums[i];
+                double one_teleport_value = (1 - alpha) * residues[i] / out_adj_nums[i]; // 要传播的一份residue。真实点获得一份，虚拟点获得weight份
                 // int outDegree = r_node.outNodes.size();
                 for (int j = 0; j < out_degree; j++)
                 {
-                    int curr_node = edges[pos_0 + j];
-                    tmp_residues[curr_node] += teleport_value * weights[curr_node];
+                    int curr_node_index = edges[pos_0 + j];
+                    tmp_residues[curr_node_index] += one_teleport_value * weights[curr_node_index];
                     // Node &v = nodes[r_node.outNodes[i]];
                     // v.tmp_residue += teleportVal * v.weight;
-                    // jisuancishu++;
+                    jisuancishu++;
                 }
                 // r_node.reserve += alpha * r_node.residue;
                 // r_node.residue = 0;
                 reserves[i] += alpha * residues[i];
+                residues[i] = 0;
             }
 
             // real_compute_time += clock();
@@ -145,13 +149,13 @@ public:
                 out_degree = pos_1 - pos_0;
 
                 // int outDegree = v_node.outNodes.size();
-                double teleport_value = tmp_residues[i] / out_degree;
+                double teleport_value = tmp_residues[i] / out_degree; // 没有虚拟点连虚拟点，虚拟点连的都是真实点，每点分一份tmp_residue就行
                 for (int j = 0; j < out_degree; j++)
                 {
                     // Node &v = nodes[v_node.outNodes[i]];
                     // v.tmp_residue += teleportVal;
-                    int curr_node = edges[pos_0 + j];
-                    tmp_residues[curr_node] += teleport_value;
+                    int curr_node_index = edges[pos_0 + j];
+                    tmp_residues[curr_node_index] += teleport_value;
                     jisuancishu++;
                 }
                 // v_node.tmp_residue = 0;
@@ -178,7 +182,7 @@ public:
                 residues[i] = tmp_residues[i];
                 tmp_residues[i] = 0;
 
-                if (residues[i] / out_degree < threshold)
+                if (residues[i] / out_adj_nums[i] < threshold)
                     node_below_thr++;
             }
 
