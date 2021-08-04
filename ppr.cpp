@@ -25,6 +25,7 @@ int main()
     // string dest_path = argv[3];
     string edge_path = "/home/zyj/zhou/dataset/web-Google1.txt";
     double threshold = 1e-6;
+    double real_compute_time;
 
     //vector<Node> nodes; //nodes用来存放点向量
     int source = 0; //我想用文件中的第一个点作为源点，整个实验最后得到的是另外的点关于它的PPR值
@@ -67,16 +68,19 @@ int main()
 
     start_pos[vertex_num] = edge_num;
 
-    vector<double> residues;
-    residues.resize(vertex_num + 1, 0);
+    // vector<double> residues;
+    // residues.resize(vertex_num + 1, 0);
 
     vector<double> tmp_residues;
     tmp_residues.resize(vertex_num + 1, 0);
 
-    vector<double> reserves;
-    reserves.resize(vertex_num + 1, 0);
+    // vector<double> reserves;
+    // reserves.resize(vertex_num + 1, 0);
 
-    residues[source] = 1.0;
+    vector<double> residues_and_reserves;
+    residues_and_reserves.resize(vertex_num * 2);
+
+    residues_and_reserves[source] = 1.0;
 
 
     int cnt = 0; // 统计迭代次数
@@ -91,22 +95,24 @@ int main()
     // 每个点的residue：有alpha部分转换为自己的reserve，有1-alpha部分平均传递给每个邻居
     while (1)
     {
+        real_compute_time -= clock();
         for (int i = 0; i < vertex_num; i++)
         {
             pos_0 = start_pos[i];
             pos_1 = start_pos[i + 1];
             out_degree = pos_1 - pos_0;
 
-            teleport_value = (1 - alpha) * residues[i] / out_degree;
+            teleport_value = (1 - alpha) * residues_and_reserves[i*2] / out_degree;
             for (int j = 0; j < out_degree; j++)
             {
                 int curr_node = edges[pos_0 + j];
                 tmp_residues[curr_node] += teleport_value;
                 jisuancishu++;
             }
-            reserves[i] += alpha * residues[i];
+            residues_and_reserves[i*2+1] += alpha * residues_and_reserves[i*2];
             // residues[i] = 0;
         }
+        real_compute_time += clock();
 
         for(int i = 0; i < vertex_num; i++)
         {
@@ -114,10 +120,10 @@ int main()
             pos_1 = start_pos[i + 1];
             out_degree = pos_1 - pos_0;
 
-            residues[i] = tmp_residues[i];
+            residues_and_reserves[i*2] = tmp_residues[i];
             tmp_residues[i] = 0;
 
-            if (residues[i] / out_degree < threshold)
+            if (residues_and_reserves[i*2] / out_degree < threshold)
                 node_below_thr++;
         }
 
@@ -133,6 +139,7 @@ int main()
     printf("%s%d\n", "step = ", cnt);
     cout << "加载文件时间：" << read_file_time << "\n计算时间：" << computing_time << endl;
     cout << "计算次数：" << jisuancishu << endl;
+    cout << "real time: " << real_compute_time/CLOCKS_PER_SEC << "s" << endl;
 
     // string outPath = "./out/ppr2.txt";
     // cout << "out path: " << outPath << endl;
