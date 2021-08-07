@@ -21,35 +21,26 @@ public:
     // 读取所有点（包括虚拟点）
     void read_nodes(string compress_vertex_path) {
         ifstream inFile(compress_vertex_path);
-        if(!inFile){
+        if(!inFile)
+        {
             cout << "open file failed. " << compress_vertex_path << endl;
             exit(0);
         }
         inFile >> all_nodes_num >> real_nodes_num;  // 文件第一行表示所有顶点个数
-        virtual_node_start = real_nodes_num;
-
-        // residues.resize(real_nodes_num); 
-        // reserves.resize(real_nodes_num);
-        residues_and_reserves.resize(real_nodes_num * 2);
-        tmp_residues.resize(all_nodes_num);
         weights.resize(all_nodes_num);
-        // out_adj_nums.resize(all_nodes_num);
-        start_pos_and_out_adj_nums.resize(all_nodes_num * 2 + 1);
-
+        out_adj_nums.resize(all_nodes_num);
         int u, weight_, out_adj_num_;
         while (inFile >> u >> weight_ >> out_adj_num_)
         {
             weights[u] = weight_;
-            start_pos_and_out_adj_nums[u * 2 + 1] = out_adj_num_;
+            out_adj_nums[u] = out_adj_num_;
         }
         inFile.close();
     }
 
     //读边
     void getNodesVec(string compress_edge_path) {
-        
         int u, v;
-
         //----------------------------------------------------------------
         int line_count = 0; //边数，最好能在压缩图的时候就算出来
         ifstream inFile0(compress_edge_path);
@@ -62,10 +53,8 @@ public:
         // cout <<"line_count: " << line_count << endl;
         inFile0.close();
         //------------------------------------------------------------------
-
-        // start_pos.resize(all_nodes_num + 1);
-        start_pos_and_out_adj_nums[all_nodes_num * 2] = line_count;
-        //edges.resize(line_count, -1);
+        start_pos.resize(all_nodes_num + 1);
+        start_pos[line_count] = line_count;
         int curr_index = -1;
         int pos = 0;
         ifstream inFile(compress_edge_path);
@@ -79,7 +68,7 @@ public:
             if (u != curr_index)
             {
                 curr_index = u;
-                start_pos_and_out_adj_nums[u * 2] = pos;
+                start_pos[u] = pos;
             }
             pos++;
         }
@@ -93,6 +82,8 @@ public:
         string e_path = "/home/zyj/zhou/PPR-proj/out/" + filename + ".e"; // 压缩图边文件，超点之间的边
         read_nodes(v_path);
         getNodesVec(e_path);
+        residues.resize(real_nodes_num); 
+        reserves.resize(real_nodes_num);
 
         // cout << "vertex_num=" << all_nodes_num << ", virtual_node_start=" << virtual_node_start << endl;
         //cout << "read file time: " << (clock() - start_read_file) / CLOCKS_PER_SEC << endl;
@@ -115,15 +106,16 @@ public:
                 pos_0 = start_pos_and_out_adj_nums[i * 2];
                 pos_1 = start_pos_and_out_adj_nums[i * 2 + 2];
                 out_degree = pos_1 - pos_0;
+                double r_and_r = residues_and_reserves[i * 2];
 
-                double one_teleport_value = (1 - alpha) * residues_and_reserves[i*2] / start_pos_and_out_adj_nums[i*2+1]; // 要传播的一份residue。真实点获得一份，虚拟点获得weight份
+                double one_teleport_value = (1 - alpha) * r_and_r / start_pos_and_out_adj_nums[i*2+1]; // 要传播的一份residue。真实点获得一份，虚拟点获得weight份
                 for (int j = 0; j < out_degree; j++)
                 {
                     int curr_node_index = edges[pos_0 + j];
                     tmp_residues[curr_node_index] += one_teleport_value * weights[curr_node_index];
-                    jisuancishu++;
+                    real_jisuancishu++;
                 }
-                residues_and_reserves[i*2+1] += alpha * residues_and_reserves[i*2];
+                residues_and_reserves[i*2+1] += alpha * r_and_r;
                 //residues[i] = 0;
             }
 
@@ -142,7 +134,7 @@ public:
                 {
                     int curr_node_index = edges[pos_0 + j];
                     tmp_residues[curr_node_index] += teleport_value;
-                    jisuancishu++;
+                    virtual_jisuancishu++;
                 }
                 tmp_residues[i] = 0;
             }
@@ -171,8 +163,14 @@ public:
         cout << "step=" << step << ", Compressed graph convergence" << endl;
         cout << "computing time: " << pre_time << "s" << endl;
         cout << "计算次数: " << jisuancishu << endl;
+        cout << "real计算次数: " << real_jisuancishu << endl;
+        cout << "virtual计算次数: " << virtual_jisuancishu << endl;
         cout << "real time: " << real_compute_time/CLOCKS_PER_SEC << "s" << endl;
         cout << "virtual time: " << virtual_compute_time/CLOCKS_PER_SEC << "s" << endl;
+        cout << "real计算时间/计算次数=" << real_compute_time / CLOCKS_PER_SEC / real_jisuancishu << endl;
+        cout << "virtual计算时间/计算次数=" << virtual_compute_time / CLOCKS_PER_SEC / virtual_jisuancishu << endl;
+
+        
         // cout << "real edge: " << real_edge << endl;
         // cout << "virtual edge: " << virtual_edge << endl;
 
@@ -201,15 +199,13 @@ public:
     int all_nodes_num; // 所有点的个数
     int real_nodes_num; // 真实点的个数
     long long int jisuancishu = 0;
-    vector<double> tmp_residues;
-    // vector<double> residues;
-    // vector<double> reserves;
-    // 把上面二合一
-    vector<double> residues_and_reserves;
+    long long int real_jisuancishu = 0;
+    long long int virtual_jisuancishu = 0;
+    vector<double> residues;
+    vector<double> reserves;
     vector<int> weights;
-    // vector<int> out_adj_nums;
-    // vector<int> start_pos;
-    vector<int> start_pos_and_out_adj_nums;
+    vector<int> out_adj_nums;
+    vector<int> start_pos;
     vector<int> edges;
     double real_compute_time;
     double virtual_compute_time;
