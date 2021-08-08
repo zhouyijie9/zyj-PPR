@@ -69,7 +69,6 @@ int main()
             printf("#Iter:%s%lu\tr_sum:%.12f\tTime Used:%.4f\t#Pushes:%llu\n",
                 (num_iter < 10 ? "0" : ""), num_iter, r_sum, (clock() - start_computing_time) / CLOCKS_PER_SEC, number_of_pushes);
         }
-
         int curr_node = active_nodes_queue.front();
         active_nodes_queue.pop();
         is_active[curr_node] = false;
@@ -77,13 +76,11 @@ int main()
         int pos_1 = start_pos[curr_node + 1];
         int out_degree = pos_1 - pos_0;
         number_of_pushes += out_degree;
-
         double curr_node_residue = residues[curr_node];
         double increment = curr_node_residue * (1 - alpha) / out_degree;
         reserves[curr_node] += alpha * curr_node_residue;
         residues[curr_node] = 0;
         r_sum -= alpha * curr_node_residue;
-
         for (int j = pos_0; j < pos_1; j++)
         {
             int curr_neighbour = edges[j];
@@ -95,15 +92,11 @@ int main()
             }
         }
     }
-
     const size_t num_iter = number_of_pushes / edge_num;
     printf("#Iter:%s%lu\tr_sum:%.12f\tTime Used:%.4f\t#Pushes:%llu\n",
         (num_iter < 10 ? "0" : ""), num_iter, r_sum, (clock() - start_computing_time) / CLOCKS_PER_SEC, number_of_pushes);
-
-
     double computing_time = (clock() - start_computing_time) / CLOCKS_PER_SEC; // 输出2：计算时间
     printf("r_sum:%.12f\tTime Used:%.4f\n", r_sum, computing_time);
-
     string outPath = "./out/ppr3.txt";
     cout << "out path: " << outPath << endl;
     ofstream fout(outPath);
@@ -111,8 +104,6 @@ int main()
     {
         fout << i << " residue: " << residues[i] << " reserve: " << reserves[i] << endl;
     }
-
     fout.close();
-    
     return 0;
 }
