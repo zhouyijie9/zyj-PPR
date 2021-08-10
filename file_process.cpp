@@ -187,13 +187,14 @@ int main()
 {
     int m = 0;
     int n = 0;
-    string fileName = "/home/zyj/zhou/dataset/web-Google1.txt";
+    string fileName = "/home/zyj/zhou/dataset/web-uk-2005-all1.mtx";
 
     // 从第三行中获取n和m
-    string str_insert_to_line1 = get_n_m_form_line3(fileName, m, n); 
+    // string str_insert_to_line1 = get_n_m_form_line3(fileName, m, n); 
+    string str_insert_to_line1 = "39459925 936364282\n"; 
 
     // 删除前4行
-    DelLineData(fileName, 4);
+    DelLineData(fileName, 3);
     
     // 把str_insert_to_line1插入第一行
     InsertData(fileName, str_insert_to_line1);

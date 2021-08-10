@@ -57,11 +57,14 @@ int main()
     double start_computing_time = clock();
     long long int number_of_pushes = 0, previous_number_of_pushes = 0;
     double threshold_to_reject = l1_error / edge_num;
+    cout << "edge_num = " << edge_num << endl;
     // 开始迭代，根据公式，当【每个点】的【residue/出度<阈值】时停止迭代
     // 每个点的residue：有alpha部分转换为自己的reserve，有1-alpha部分平均传递给每个邻居
     // 如果还有点的【residue/出度>=阈值】，即active_nodes_queue不为空，就要继续迭代
-    while(!active_nodes_queue.empty() && r_sum >= l1_error)
+    long long int while_step = 0;
+    while (!active_nodes_queue.empty() && r_sum >= l1_error)
     {
+        while_step++;
         if (number_of_pushes - previous_number_of_pushes >= edge_num)
         {
             previous_number_of_pushes = number_of_pushes;
@@ -77,6 +80,8 @@ int main()
         int out_degree = pos_1 - pos_0;
         number_of_pushes += out_degree;
         double curr_node_residue = residues[curr_node];
+        double tmp_data_1 = reserves[curr_node];
+        double tmp_data_2 = is_active[curr_node];
         double increment = curr_node_residue * (1 - alpha) / out_degree;
         reserves[curr_node] += alpha * curr_node_residue;
         residues[curr_node] = 0;
@@ -92,6 +97,7 @@ int main()
             }
         }
     }
+    cout << "while_step="<<while_step << endl;
     const size_t num_iter = number_of_pushes / edge_num;
     printf("#Iter:%s%lu\tr_sum:%.12f\tTime Used:%.4f\t#Pushes:%llu\n",
         (num_iter < 10 ? "0" : ""), num_iter, r_sum, (clock() - start_computing_time) / CLOCKS_PER_SEC, number_of_pushes);
